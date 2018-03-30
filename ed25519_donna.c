@@ -49,12 +49,13 @@ static PyObject* mul(PyObject* self, PyObject* args)
 	}
 
         // convert to hex string
-	PyObject* pyhex = PyBytes_FromFormat("%064x", value);
-	char* hex = PyBytes_AsString(pyhex);
-	PyObject* pyhexPx = PyBytes_FromFormat("%064x", valuex);
-	char* hexPx = PyBytes_AsString(pyhexPx);
-	PyObject* pyhexPy = PyBytes_FromFormat("%064x", valuey);
-	char* hexPy = PyBytes_AsString(pyhexPy);
+	PyObject* fmt = PyUnicode_FromString("%064x");
+	PyObject* pyhex = PyUnicode_Format(fmt, value);
+	char* hex = PyUnicode_AsUTF8(pyhex);
+	PyObject* pyhexPx = PyUnicode_Format(fmt, valuex);
+	char* hexPx = PyUnicode_AsUTF8(pyhexPx);
+	PyObject* pyhexPy = PyUnicode_Format(fmt, valuey);
+	char* hexPy = PyUnicode_AsUTF8(pyhexPy);
 
 	// load point
 	ge25519 p;
@@ -66,6 +67,7 @@ static PyObject* mul(PyObject* self, PyObject* args)
 	bignum256modm a;
 	expand256_modm(a, buf, 32);
 
+	Py_DECREF(fmt);
 	Py_DECREF(pyhex);
 	Py_DECREF(pyhexPx);
 	Py_DECREF(pyhexPy);
@@ -137,20 +139,22 @@ static PyObject* add(PyObject* self, PyObject* args)
 
 
 	// convert to hex string
-	PyObject* pyhexAx = PyBytes_FromFormat("%064x", oAx);
-	char* hexAx = PyBytes_AsString(pyhexAx);
-	PyObject* pyhexAy = PyBytes_FromFormat("%064x", oAy);
-	char* hexAy = PyBytes_AsString(pyhexAy);
-	PyObject* pyhexBx = PyBytes_FromFormat("%064x", oBx);
-	char* hexBx = PyBytes_AsString(pyhexBx);
-	PyObject* pyhexBy = PyBytes_FromFormat("%064x", oBy);
-	char* hexBy = PyBytes_AsString(pyhexBy);
+	PyObject* fmt = PyUnicode_FromString("%064x");
+	PyObject* pyhexAx = PyUnicode_Format(fmt, oAx);
+	char* hexAx = PyUnicode_AsUTF8(pyhexAx);
+	PyObject* pyhexAy = PyUnicode_Format(fmt, oAy);
+	char* hexAy = PyUnicode_AsUTF8(pyhexAy);
+	PyObject* pyhexBx = PyUnicode_Format(fmt, oBx);
+	char* hexBx = PyUnicode_AsUTF8(pyhexBx);
+	PyObject* pyhexBy = PyUnicode_Format(fmt, oBy);
+	char* hexBy = PyUnicode_AsUTF8(pyhexBy);
 
 	// load points
 	ge25519 a, b;
 	ge25519_set_hex_xy(&a, hexAx, hexAy);
 	ge25519_set_hex_xy(&b, hexBx, hexBy);
 
+	Py_DECREF(fmt);
 	Py_DECREF(pyhexAx);
 	Py_DECREF(pyhexAy);
 	Py_DECREF(pyhexBx);
@@ -199,15 +203,17 @@ static PyObject* inv(PyObject* self, PyObject* args)
 	// edwards curves do not have a point at infinity
 
 	// convert to hex string
-	PyObject* pyhexPx = PyBytes_FromFormat("%064x", Px);
-	char* hexPx = PyBytes_AsString(pyhexPx);
-	PyObject* pyhexPy = PyBytes_FromFormat("%064x", Py);
-	char* hexPy = PyBytes_AsString(pyhexPy);
+	PyObject* fmt = PyUnicode_FromString("%064x");
+	PyObject* pyhexPx = PyUnicode_Format(fmt, Px);
+	char* hexPx = PyUnicode_AsUTF8(pyhexPx);
+	PyObject* pyhexPy = PyUnicode_Format(fmt, Py);
+	char* hexPy = PyUnicode_AsUTF8(pyhexPy);
 
 	// load point
 	ge25519 p;
 	ge25519_set_hex_xy(&p, hexPx, hexPy);
 
+	Py_DECREF(fmt);
 	Py_DECREF(pyhexPx);
 	Py_DECREF(pyhexPy);
 
@@ -249,15 +255,17 @@ static PyObject* compress(PyObject* self, PyObject* args)
 	// edwards curves do not have a point at infinity
 
 	// convert to hex string
-	PyObject* pyhexPx = PyBytes_FromFormat("%064x", Px);
-	char* hexPx = PyBytes_AsString(pyhexPx);
-	PyObject* pyhexPy = PyBytes_FromFormat("%064x", Py);
-	char* hexPy = PyBytes_AsString(pyhexPy);
+	PyObject* fmt = PyUnicode_FromString("%064x");
+	PyObject* pyhexPx = PyUnicode_Format(fmt, Px);
+	char* hexPx = PyUnicode_AsUTF8(pyhexPx);
+	PyObject* pyhexPy = PyUnicode_Format(fmt, Py);
+	char* hexPy = PyUnicode_AsUTF8(pyhexPy);
 
 	// load point
 	ge25519 p;
 	ge25519_set_hex_xy(&p, hexPx, hexPy);
 
+	Py_DECREF(fmt);
 	Py_DECREF(pyhexPx);
 	Py_DECREF(pyhexPy);
 
@@ -285,7 +293,7 @@ static PyObject* compress(PyObject* self, PyObject* args)
 	}
 
 	// convert char array to python string object
-	PyObject* s = PyBytes_FromStringAndSize(pub,33);
+	PyObject* s = PyUnicode_FromStringAndSize(pub,33);
 
 	return Py_BuildValue("N", s);
 
@@ -305,7 +313,7 @@ static PyObject* decompress(PyObject* self, PyObject* args)
 		return NULL;
 	}
 
-	char* pub = PyBytes_AsString(pubs);
+	char* pub = PyUnicode_AsUTF8(pubs);
 
 	// check if point at infinity received
 	// edwards curves do not have a point at infinity
@@ -355,10 +363,11 @@ static PyObject* valid(PyObject* self, PyObject* args)
 	// edwards curves do not have a point at infinity
 
 	// convert to hex string
-	PyObject* pyhexPx = PyBytes_FromFormat("%064x", Px);
-	char* hexPx = PyBytes_AsString(pyhexPx);
-	PyObject* pyhexPy = PyBytes_FromFormat("%064x", Py);
-	char* hexPy = PyBytes_AsString(pyhexPy);
+	PyObject* fmt = PyUnicode_FromString("%064x");
+	PyObject* pyhexPx = PyUnicode_Format(fmt, Px);
+	char* hexPx = PyUnicode_AsUTF8(pyhexPx);
+	PyObject* pyhexPy = PyUnicode_Format(fmt, Py);
+	char* hexPy = PyUnicode_AsUTF8(pyhexPy);
 
 	// convert point to little endian
 	unsigned char x[32];
@@ -366,6 +375,7 @@ static PyObject* valid(PyObject* self, PyObject* args)
 	from_hex_swap(x,hexPx);
 	from_hex_swap(y,hexPy);
 
+	Py_DECREF(fmt);
 	Py_DECREF(pyhexPx);
 	Py_DECREF(pyhexPy);
 

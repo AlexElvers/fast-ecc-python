@@ -28,7 +28,7 @@ static PyObject* mul(PyObject* self, PyObject* args)
 		return NULL;
 	}
 
-	if (!PyInt_Check(value) && !PyLong_Check(value)) {
+	if (!PyLong_Check(value)) {
 		PyErr_SetString(PyExc_TypeError, "expected int or long");
 		return NULL;
 	}
@@ -49,13 +49,12 @@ static PyObject* mul(PyObject* self, PyObject* args)
 	}
 
         // convert to hex string
-        PyObject* fmt = PyString_FromString("%064x");
-	PyObject* pyhex = PyString_Format(fmt, value);
-	char* hex = PyString_AsString(pyhex);
-	PyObject* pyhexPx = PyString_Format(fmt, valuex);
-	char* hexPx = PyString_AsString(pyhexPx);
-	PyObject* pyhexPy = PyString_Format(fmt, valuey);
-	char* hexPy = PyString_AsString(pyhexPy);
+	PyObject* pyhex = PyBytes_FromFormat("%064x", value);
+	char* hex = PyBytes_AsString(pyhex);
+	PyObject* pyhexPx = PyBytes_FromFormat("%064x", valuex);
+	char* hexPx = PyBytes_AsString(pyhexPx);
+	PyObject* pyhexPy = PyBytes_FromFormat("%064x", valuey);
+	char* hexPy = PyBytes_AsString(pyhexPy);
 
 	// load point
 	ge25519 p;
@@ -67,7 +66,6 @@ static PyObject* mul(PyObject* self, PyObject* args)
 	bignum256modm a;
 	expand256_modm(a, buf, 32);
 
-	Py_DECREF(fmt);
 	Py_DECREF(pyhex);
 	Py_DECREF(pyhexPx);
 	Py_DECREF(pyhexPy);
@@ -139,22 +137,20 @@ static PyObject* add(PyObject* self, PyObject* args)
 
 
 	// convert to hex string
-	PyObject* fmt = PyString_FromString("%064x");
-	PyObject* pyhexAx = PyString_Format(fmt, oAx);
-	char* hexAx = PyString_AsString(pyhexAx);
-	PyObject* pyhexAy = PyString_Format(fmt, oAy);
-	char* hexAy = PyString_AsString(pyhexAy);
-	PyObject* pyhexBx = PyString_Format(fmt, oBx);
-	char* hexBx = PyString_AsString(pyhexBx);
-	PyObject* pyhexBy = PyString_Format(fmt, oBy);
-	char* hexBy = PyString_AsString(pyhexBy);
+	PyObject* pyhexAx = PyBytes_FromFormat("%064x", oAx);
+	char* hexAx = PyBytes_AsString(pyhexAx);
+	PyObject* pyhexAy = PyBytes_FromFormat("%064x", oAy);
+	char* hexAy = PyBytes_AsString(pyhexAy);
+	PyObject* pyhexBx = PyBytes_FromFormat("%064x", oBx);
+	char* hexBx = PyBytes_AsString(pyhexBx);
+	PyObject* pyhexBy = PyBytes_FromFormat("%064x", oBy);
+	char* hexBy = PyBytes_AsString(pyhexBy);
 
 	// load points
 	ge25519 a, b;
 	ge25519_set_hex_xy(&a, hexAx, hexAy);
 	ge25519_set_hex_xy(&b, hexBx, hexBy);
 
-	Py_DECREF(fmt);
 	Py_DECREF(pyhexAx);
 	Py_DECREF(pyhexAy);
 	Py_DECREF(pyhexBx);
@@ -203,17 +199,15 @@ static PyObject* inv(PyObject* self, PyObject* args)
 	// edwards curves do not have a point at infinity
 
 	// convert to hex string
-	PyObject* fmt = PyString_FromString("%064x");
-	PyObject* pyhexPx = PyString_Format(fmt, Px);
-	char* hexPx = PyString_AsString(pyhexPx);
-	PyObject* pyhexPy = PyString_Format(fmt, Py);
-	char* hexPy = PyString_AsString(pyhexPy);
+	PyObject* pyhexPx = PyBytes_FromFormat("%064x", Px);
+	char* hexPx = PyBytes_AsString(pyhexPx);
+	PyObject* pyhexPy = PyBytes_FromFormat("%064x", Py);
+	char* hexPy = PyBytes_AsString(pyhexPy);
 
 	// load point
 	ge25519 p;
 	ge25519_set_hex_xy(&p, hexPx, hexPy);
 
-	Py_DECREF(fmt);
 	Py_DECREF(pyhexPx);
 	Py_DECREF(pyhexPy);
 
@@ -255,17 +249,15 @@ static PyObject* compress(PyObject* self, PyObject* args)
 	// edwards curves do not have a point at infinity
 
 	// convert to hex string
-	PyObject* fmt = PyString_FromString("%064x");
-	PyObject* pyhexPx = PyString_Format(fmt, Px);
-	char* hexPx = PyString_AsString(pyhexPx);
-	PyObject* pyhexPy = PyString_Format(fmt, Py);
-	char* hexPy = PyString_AsString(pyhexPy);
+	PyObject* pyhexPx = PyBytes_FromFormat("%064x", Px);
+	char* hexPx = PyBytes_AsString(pyhexPx);
+	PyObject* pyhexPy = PyBytes_FromFormat("%064x", Py);
+	char* hexPy = PyBytes_AsString(pyhexPy);
 
 	// load point
 	ge25519 p;
 	ge25519_set_hex_xy(&p, hexPx, hexPy);
 
-	Py_DECREF(fmt);
 	Py_DECREF(pyhexPx);
 	Py_DECREF(pyhexPy);
 
@@ -293,7 +285,7 @@ static PyObject* compress(PyObject* self, PyObject* args)
 	}
 
 	// convert char array to python string object
-	PyObject* s = PyString_FromStringAndSize(pub,33);
+	PyObject* s = PyBytes_FromStringAndSize(pub,33);
 
 	return Py_BuildValue("N", s);
 
@@ -308,12 +300,12 @@ static PyObject* decompress(PyObject* self, PyObject* args)
 		return NULL;
 	}
 
-	if (!PyString_Check(pubs)) {
+	if (!PyBytes_Check(pubs)) {
 		PyErr_SetString(PyExc_TypeError, "string expected");
 		return NULL;
 	}
 
-	char* pub = PyString_AsString(pubs);
+	char* pub = PyBytes_AsString(pubs);
 
 	// check if point at infinity received
 	// edwards curves do not have a point at infinity
@@ -363,11 +355,10 @@ static PyObject* valid(PyObject* self, PyObject* args)
 	// edwards curves do not have a point at infinity
 
 	// convert to hex string
-	PyObject* fmt = PyString_FromString("%064x");
-	PyObject* pyhexPx = PyString_Format(fmt, Px);
-	char* hexPx = PyString_AsString(pyhexPx);
-	PyObject* pyhexPy = PyString_Format(fmt, Py);
-	char* hexPy = PyString_AsString(pyhexPy);
+	PyObject* pyhexPx = PyBytes_FromFormat("%064x", Px);
+	char* hexPx = PyBytes_AsString(pyhexPx);
+	PyObject* pyhexPy = PyBytes_FromFormat("%064x", Py);
+	char* hexPy = PyBytes_AsString(pyhexPy);
 
 	// convert point to little endian
 	unsigned char x[32];
@@ -375,7 +366,6 @@ static PyObject* valid(PyObject* self, PyObject* args)
 	from_hex_swap(x,hexPx);
 	from_hex_swap(y,hexPy);
 
-	Py_DECREF(fmt);
 	Py_DECREF(pyhexPx);
 	Py_DECREF(pyhexPy);
 
@@ -391,12 +381,12 @@ static PyObject* valid(PyObject* self, PyObject* args)
 	curve25519_square(r.y, r.y); /* y = y^2 */
 	curve25519_mul(numr, r.x, r.y); /* numr = x*x*y*y */
 	curve25519_mul(numr, numr, ge25519_ecd); /* numr = d*x*x*y*y */
-	
+
 	curve25519_neg(numl, r.x); /* numl = -x*x */
 	curve25519_add_reduce(numl, numl, r.y); /* numl = -x*x + y*y */
 	curve25519_sub_reduce(numl, numl, one); /* numl = -x*x + y*y -1 */
 	curve25519_sub_reduce(numl, numl, numr);  /* numl = -x*x + y*y -1 - numr */
-	
+
 	static const unsigned char zero[32] = {0};
 	unsigned char check[32];
 	curve25519_contract(check, numl);
@@ -422,11 +412,24 @@ static PyMethodDef Methods[] =
 	{NULL, NULL, 0, NULL}
 };
 
-PyMODINIT_FUNC inited25519_donna(void)
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "ed25519_donna",
+        NULL,
+        -1,
+        Methods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+PyMODINIT_FUNC
+PyInit_ed25519_donna(void)
 {
 
 	PyObject *module;
-	module = Py_InitModule("ed25519_donna", Methods);
+	module = PyModule_Create(&moduledef);
 
 	// export base point g
 	unsigned char charone[32] = {1};
@@ -462,11 +465,13 @@ PyMODINIT_FUNC inited25519_donna(void)
 	// export curve order as module variable "n"
 	PyModule_AddObject(module, "n", Py_BuildValue("N", n));
 
+	return module;
+
 }
 
 static void ge25519_set_hex_xy(ge25519* p, unsigned char* hexx, unsigned char* hexy) {
 
-        
+
 	unsigned char x[32];
 	unsigned char y[32];
 	from_hex_swap(x,hexx);
